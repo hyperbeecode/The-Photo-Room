@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Camera with Filters and Film Strip</title>
+  <style>
+    body {
+      text-align: center;
+      font-family: sans-serif;
+    }
+    video, canvas {
+      border: 2px solid #000;
+      max-width: 100%;
+    }
+    #controls {
+      margin: 15px 0;
+    }
+    #capture {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #filterSelect {
+      margin-left: 10px;
+      padding: 5px;
+    }
+    #filmstrip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+      justify-content: center;
+    }
+    .snapshot {
+      border: 1px solid #333;
+      width: 120px;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>📷 Camera with Filters & Film Strip</h2>
+  <video id="video" autoplay></video>
+
+  <div id="controls">
+    <button id="capture">📸 Take Picture</button>
+    <select id="filterSelect">
+      <option value="none">None</option>
+      <option value="grayscale(100%)">Grayscale</option>
+      <option value="sepia(100%)">Sepia</option>
+      <option value="invert(100%)">Invert</option>
+      <option value="blur(3px)">Blur</option>
+    </select>
+  </div>
+
+  <canvas id="canvas" style="display: none;"></canvas>
+
+  <div id="filmstrip"></div>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const captureButton = document.getElementById('capture');
+    const filterSelect = document.getElementById('filterSelect');
+    const filmstrip = document.getElementById('filmstrip');
+    const context = canvas.getContext('2d');
+
+    // Access the user's webcam
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+      })
+      .catch(error => {
+        console.error('Error accessing camera:', error);
+      });
+
+    // Apply selected filter live to the video
+    filterSelect.addEventListener('change', () => {
+      video.style.filter = filterSelect.value;
+    });
+
+    // Capture the image with the current filter applied
+    captureButton.addEventListener('click', () => {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      // Apply same filter to canvas context
+      context.filter = filterSelect.value;
+
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // Convert canvas to image
+      const imageURL = canvas.toDataURL('image/png');
+
+      const img = document.createElement('img');
+      img.src = imageURL;
+      img.className = 'snapshot';
+
+      filmstrip.appendChild(img);
+    });
+  </script>
+
+</body>
+</html>
